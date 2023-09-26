@@ -7,31 +7,6 @@ from User_Video import User_Video
 def main():
     r = redis.Redis(host="localhost", port=6379, db=0)
     r.flushdb()
-    # Define the Video entity
-    # video1 = {
-    #     "id": r.incr("video_id"),  # Auto-generated ID
-    #     "name": "Video 1",
-    #     "views": 1000
-    # }
-
-    # # Define the User entity
-    # user1 = {
-    #     "id": r.incr("user_id"),  # Auto-generated ID
-    #     "name": "User 1"
-    # }
-
-    # # Define the Video-User entity
-    # video_user1 = {
-    #     "id": r.incr("video_user_id"),  # Auto-generated ID
-    #     "video_id": video1["id"],
-    #     "user_id": user1["id"],
-    #     "time": "2023-09-24 12:00:00"  # Use a valid date and time
-    # }
-
-    # # Store entities in Redis as JSON strings
-    # r.set(f"video:{video1['id']}", json.dumps(video1))
-    # r.set(f"user:{user1['id']}", json.dumps(user1))
-    # r.set(f"video_user:{video_user1['id']}", json.dumps(video_user1))
 
     user_manager = User(r)
     video_manager = Video(r)
