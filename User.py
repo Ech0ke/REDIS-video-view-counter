@@ -15,21 +15,24 @@ class User:
             "name": name
         }
         # Store the new user
-        self.redis.set(user_key, json.dumps(user_data))
+        for field, value in user_data.items():
+            self.redis.hset(user_key, field, value)
         return f"\nUser {name} created successfully."
 
     def get_all_users(self):
         user_keys = self.redis.keys("user:*")
         users = []
         for user_key in user_keys:
-            user_data = self.redis.get(user_key)
-            users.append(json.loads(user_data))
+            user_data = self.redis.hgetall(user_key)
+            user_dict = {field.decode("utf-8"): value.decode("utf-8")
+                         for field, value in user_data.items()}
+            users.append(user_dict)
         return users
 
     def remove_user_by_id(self, id):
-
-        user_data = self.redis.get(f"user:{id}")
-        if user_data == None:
+        user_key = f"user:{id}"
+        user_data = self.redis.hgetall(user_key)
+        if not self.redis.exists(user_key):
             return "\nUser not found."
-        self.redis.delete(f"user:{id}")
+        self.redis.delete(user_key)
         return "\nUser removed successfully."
