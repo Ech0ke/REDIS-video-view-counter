@@ -33,8 +33,7 @@ class Video:
     def remove_video_by_id(self, id):
         video_key = f"video:{id}"
         video_data = self.redis.hgetall(video_key)
-        print(video_data)
         if not self.redis.exists(video_key):
             return "\nVideo not found."
-        self.redis.delete(f"video:{id}")
+        self.redis.delete(video_key)
         return "\nVideo removed successfully."
