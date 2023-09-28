@@ -16,6 +16,7 @@ class User_Video:
 
         if not self.redis.exists(video_key):
             return f"\nVideo with ID {video_id} not found."
+
         # Queue the user to watch the video
         self.redis.rpush(f"video:{video_id}:watch_queue", user_id)
 
@@ -25,8 +26,7 @@ class User_Video:
                 f"video:{video_id}:watch_queue", 0)).decode('utf-8')
             if user_in_queue == user_id:
                 break  # It's this user's turn
-            else:
-                time.sleep(1)  # Wait for 0.3 seconds before checking again
+            time.sleep(0.3)  # Wait for 0.3 seconds before checking again
 
         # Start a Redis transaction using MULTI
         pipeline = self.redis.pipeline()
@@ -39,24 +39,18 @@ class User_Video:
             pipeline.multi()
             pipeline.hincrby(video_key, "views", 1)
 
-            # # Increment views of the video
+            # Increment views of the video
             pipeline.incr(f"{video_id}_incrementor")
-
+            # Associate user with watched video
             pipeline.sadd(f"user:{user_id}:watched_videos", video_key)
 
-            user_video_data = {
-                "fk_video_id": video_key,
-                "fk_user_id": user_key,
-                "time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            }
+            video_view_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
+            # Register the time of watched video and associate it with the user
             pipeline.sadd(f"user:{user_id}:video:{video_id}:watch_times",
-                          user_video_data["time"])
+                          video_view_time)
 
-            # for field, value in user_video_data.items():
-            #     pipeline.hset(user_video_key, field, value)
-
-            time.sleep(5)
+            # time.sleep(5)
             # Execute the transaction
             pipeline.execute()
 
@@ -74,19 +68,47 @@ class User_Video:
 
     def get_watched_videos(self, user_id):
         watched_videos_key = f"user:{user_id}:watched_videos"
+
+        if not self.redis.exists(watched_videos_key):
+            return f"\nUser with ID {user_id} not found or he/she didn't watch any videos."
+
         watched_video_keys = self.redis.smembers(watched_videos_key)
 
         watched_videos = []
 
-        for video_key in watched_video_keys:
+        for video_key_bytes in watched_video_keys:
+            video_key = video_key_bytes.decode(
+                'utf-8')  # Decode the bytes to a string
             video_details = self.redis.hgetall(video_key)
-            watched_videos.append(video_details)
+
+            # Decode the "name" and "views" fields
+            video_details_decoded = {
+                key.decode('utf-8'): value.decode('utf-8') for key, value in video_details.items()
+            }
+
+            watch_times = self.get_watch_times(user_id, video_key)
+
+            for time in watch_times:
+                video_details_decoded["Time"] = time
+                # Use copy to avoid overwriting
+                watched_videos.append(video_details_decoded.copy())
 
         return watched_videos
 
-    def remove_user_by_id(self, id):
+    def get_watch_times(self, user_id, video_key):
+        watch_times_key = f"user:{user_id}:{video_key}:watch_times"
+        watch_times = self.redis.smembers(watch_times_key)
 
-        user_data = self.redis.get(f"user:{id}")
+        # Decode the bytes to strings
+        return [time.decode('utf-8') for time in watch_times]
+
+    def get_viewers(self, video_id):
+
+        user_keys = self.redis.smembers(f"video:{video_id}:viewers")
+        viewers_data = []
+
+        for user_key in user_keys:
+            user_
         if user_data == None:
             return "\nUser not found."
         self.redis.delete(f"user:{id}")

@@ -78,8 +78,19 @@ def main():
             case "8":
                 user_id = input(
                     "Enter user id to view all of his/her watched videos: ")
-                result = user_video_manager.get_watched_videos(user_id)
-                print(result)
+                user_watched_videos = user_video_manager.get_watched_videos(
+                    user_id)
+                if isinstance(user_watched_videos, list):
+                    # If user_watched_videos is a list (array)
+                    print("\n")
+                    print("{:<80} {:<10} {:<15}".format(
+                        "Name", "Views", "Time"))
+                    for video in user_watched_videos:
+                        print("{:<80} {:<10} {:<15}".format(
+                            video['name'], video['views'], video['Time']))
+                elif isinstance(user_watched_videos, str):
+                    # If user_watched_videos is a string
+                    print(user_watched_videos)
             case "9":
                 print("Application shutdown")
                 break
