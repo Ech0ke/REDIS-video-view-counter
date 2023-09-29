@@ -24,10 +24,15 @@ class Video:
         video_keys = self.redis.keys("video:*")
         videos = []
         for video_key in video_keys:
-            video_data = self.redis.hgetall(video_key)
-            video_dict = {field.decode("utf-8"): value.decode("utf-8")
-                          for field, value in video_data.items()}
-            videos.append(video_dict)
+           # Check the data type of the key
+            key_type = self.redis.type(video_key).decode('utf-8')
+
+            if key_type == 'hash':
+                # If the key holds a hash value, retrieve and process it
+                video_data = self.redis.hgetall(video_key)
+                video_dict = {field.decode("utf-8"): value.decode("utf-8")
+                              for field, value in video_data.items()}
+                videos.append(video_dict)
         return videos
 
     def remove_video_by_id(self, id):

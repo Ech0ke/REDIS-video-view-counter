@@ -23,10 +23,13 @@ class User:
         user_keys = self.redis.keys("user:*")
         users = []
         for user_key in user_keys:
-            user_data = self.redis.hgetall(user_key)
-            user_dict = {field.decode("utf-8"): value.decode("utf-8")
-                         for field, value in user_data.items()}
-            users.append(user_dict)
+            key_type = self.redis.type(user_key).decode('utf-8')
+
+            if key_type == 'hash':
+                user_data = self.redis.hgetall(user_key)
+                user_dict = {field.decode("utf-8"): value.decode("utf-8")
+                             for field, value in user_data.items()}
+                users.append(user_dict)
         return users
 
     def remove_user_by_id(self, id):
