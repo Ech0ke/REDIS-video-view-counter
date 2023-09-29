@@ -103,7 +103,7 @@ class User_Video:
         viewer_data = []
 
         if not self.redis.exists(viewers_key):
-            return f"\nVideo with id {video_id} doesn't exist or no one has watched the video yet"
+            return f"\nVideo with ID {video_id} doesn't exist or no one has watched the video yet"
 
         viewer_ids = self.redis.smembers(viewers_key)
         for viewer_id_bytes in viewer_ids:
