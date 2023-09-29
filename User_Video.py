@@ -50,6 +50,9 @@ class User_Video:
             pipeline.sadd(f"user:{user_id}:video:{video_id}:watch_times",
                           video_view_time)
 
+            # Associate user id video the video
+            pipeline.sadd(f"video:{video_id}:viewers", user_id)
+
             # time.sleep(5)
             # Execute the transaction
             pipeline.execute()
@@ -95,21 +98,35 @@ class User_Video:
 
         return watched_videos
 
+    def get_viewers(self, video_id):
+        viewers_key = f"video:{video_id}:viewers"
+        viewer_data = []
+
+        if not self.redis.exists(viewers_key):
+            return f"\nVideo with id {video_id} doesn't exist or no one has watched the video yet"
+
+        viewer_ids = self.redis.smembers(viewers_key)
+        for viewer_id_bytes in viewer_ids:
+            viewer_id = viewer_id_bytes.decode(
+                'utf-8')  # Decode the bytes to a string
+            viewer_name = self.redis.hget(
+                f"user:{viewer_id}", "name").decode('utf-8')
+            viewer_watch_times = self.get_watch_times(
+                viewer_id, f"video:{video_id}")
+
+            for time in viewer_watch_times:
+                viewer_data.append({
+                    "UserId": viewer_id,
+                    "UserName": viewer_name,
+                    "Time": time,
+                })
+
+        return viewer_data
+
     def get_watch_times(self, user_id, video_key):
+        print(user_id)
         watch_times_key = f"user:{user_id}:{video_key}:watch_times"
         watch_times = self.redis.smembers(watch_times_key)
 
         # Decode the bytes to strings
         return [time.decode('utf-8') for time in watch_times]
-
-    def get_viewers(self, video_id):
-
-        user_keys = self.redis.smembers(f"video:{video_id}:viewers")
-        viewers_data = []
-
-        for user_key in user_keys:
-            user_
-        if user_data == None:
-            return "\nUser not found."
-        self.redis.delete(f"user:{id}")
-        return "\nUser removed successfully."

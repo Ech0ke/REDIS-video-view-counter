@@ -31,8 +31,8 @@ def main():
         print("6. Remove video by id")
         print("7. Watch video")
         print("8. Show watched videos by user")
-        print("8. Show all users by video")
-        print("9. Exit")
+        print("9. Show all user's watch times by video")
+        print("10. Exit")
         print("---------------------")
 
         choice = input("Enter your choice (1-9): ")
@@ -84,7 +84,7 @@ def main():
                     # If user_watched_videos is a list (array)
                     print("\n")
                     print("{:<80} {:<10} {:<15}".format(
-                        "Name", "Views", "Time"))
+                        "Video Name", "Views", "Time"))
                     for video in user_watched_videos:
                         print("{:<80} {:<10} {:<15}".format(
                             video['name'], video['views'], video['Time']))
@@ -92,6 +92,23 @@ def main():
                     # If user_watched_videos is a string
                     print(user_watched_videos)
             case "9":
+                video_id = input(
+                    "Enter video id to view all users that watched this video: ")
+                video_viewers = user_video_manager.get_viewers(
+                    video_id)
+                if isinstance(video_viewers, list):
+                    # If user_watched_videos is a list (array)
+                    print("\n")
+                    print("{:<30} {:<30} {:<10}".format(
+                        "User Id", "User Name", "Time"))
+                    for viewer in video_viewers:
+                        print("{:<30} {:<30} {:<10}".format(
+                            viewer['UserId'],
+                            viewer['UserName'], viewer['Time']))
+                elif isinstance(video_viewers, str):
+                    # If user_watched_videos is a string
+                    print(video_viewers)
+            case "10":
                 print("Application shutdown")
                 break
             case _:
