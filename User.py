@@ -24,7 +24,7 @@ class User:
         users = []
         for user_key in user_keys:
             key_type = self.redis.type(user_key).decode('utf-8')
-
+            # Check for key type in order to collect user info and not user's watch times or watched videos
             if key_type == 'hash':
                 user_data = self.redis.hgetall(user_key)
                 user_dict = {field.decode("utf-8"): value.decode("utf-8")
@@ -35,7 +35,8 @@ class User:
     def remove_user_by_id(self, id):
         user_key = f"user:{id}"
         user_data = self.redis.hgetall(user_key)
+        # Check if user exists
         if not self.redis.exists(user_key):
-            return "\nUser not found."
+            return f"\nUser {id} not found."
         self.redis.delete(user_key)
-        return "\nUser removed successfully."
+        return f"\nUser {id} removed successfully."
